@@ -1,61 +1,57 @@
 class Measurement {
   const Measurement({
     required this.id,
-    required this.recordedAt,
     required this.systolic,
     required this.diastolic,
     required this.pulse,
+    required this.recordedAt,
   });
 
   final String id;
-  final DateTime recordedAt;
   final int systolic;
   final int diastolic;
   final int pulse;
-
-  Measurement copyWith({
-    int? systolic,
-    int? diastolic,
-    int? pulse,
-  }) {
-    return Measurement(
-      id: id,
-      recordedAt: recordedAt,
-      systolic: systolic ?? this.systolic,
-      diastolic: diastolic ?? this.diastolic,
-      pulse: pulse ?? this.pulse,
-    );
-  }
+  final DateTime recordedAt;
 
   Map<String, Object> toJson() {
     return {
       'id': id,
-      'recordedAt': recordedAt.toIso8601String(),
       'systolic': systolic,
       'diastolic': diastolic,
       'pulse': pulse,
+      'recordedAt': recordedAt.toIso8601String(),
     };
   }
 
   factory Measurement.fromJson(Map<String, dynamic> json) {
     return Measurement(
       id: json['id'] as String,
+      systolic: _asInt(json['systolic']),
+      diastolic: _asInt(json['diastolic']),
+      pulse: _asInt(json['pulse']),
       recordedAt: DateTime.parse(json['recordedAt'] as String),
-      systolic: json['systolic'] as int,
-      diastolic: json['diastolic'] as int,
-      pulse: json['pulse'] as int,
     );
   }
 }
 
-class DayReading {
-  const DayReading({
-    required this.day,
-    required this.systolic,
-    required this.diastolic,
-  });
+int _asInt(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.round();
+  }
+  throw const FormatException('measurement field');
+}
 
-  final DateTime day;
-  final int systolic;
-  final int diastolic;
+abstract final class MeasurementBounds {
+  static const systolicMin = 70;
+  static const systolicMax = 250;
+  static const diastolicMin = 40;
+  static const diastolicMax = 150;
+  static const pulseMin = 30;
+  static const pulseMax = 220;
+  static const defaultSystolic = 120;
+  static const defaultDiastolic = 80;
+  static const defaultPulse = 70;
 }

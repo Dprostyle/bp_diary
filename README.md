@@ -1,6 +1,6 @@
 # bp_diary
 
-A new Flutter project.
+Дневник артериального давления
 
 ## Getting Started
 

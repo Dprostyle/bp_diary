@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-
-import '../../core/theme/app_colors.dart';
-import '../add/add_measurement_screen.dart';
-import '../home/dashboard_screen.dart';
-import '../settings/settings_screen.dart';
-import 'app_bottom_nav.dart';
+import 'package:bp_diary/core/theme/app_colors.dart';
+import 'package:bp_diary/features/add/add_measurement_screen.dart';
+import 'package:bp_diary/features/history/history_screen.dart';
+import 'package:bp_diary/features/settings/settings_screen.dart';
+import 'package:bp_diary/features/shell/app_bottom_bar.dart';
+import 'package:flutter/cupertino.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -14,49 +13,43 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  var _index = 0;
+  int _index = AppBottomBar.historyIndex;
 
-  void _openAdd() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const AddMeasurementScreen(),
+  Future<void> _openAdd() async {
+    final saved = await Navigator.of(context).push<bool>(
+      CupertinoPageRoute<bool>(
+        fullscreenDialog: true,
+        builder: (context) => const AddMeasurementScreen(),
       ),
     );
+    if (saved == true && mounted) {
+      setState(() => _index = AppBottomBar.historyIndex);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: _index == 0,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) setState(() => _index = 0);
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: Column(
-          children: [
-            Expanded(
-              child: SafeArea(
-                bottom: false,
-                child: IndexedStack(
-                  index: _index,
-                  children: [
-                    DashboardScreen(
-                      onOpenSettings: () => setState(() => _index = 1),
-                    ),
-                    const SettingsScreen(),
-                  ],
-                ),
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      child: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: IndexedStack(
+                index: _index,
+                children: const [HistoryScreen(), SettingsScreen()],
               ),
             ),
-            AppBottomNav(
-              index: _index,
-              onHistory: () => setState(() => _index = 0),
-              onSettings: () => setState(() => _index = 1),
-              onAdd: _openAdd,
-            ),
-          ],
-        ),
+          ),
+          AppBottomBar(
+            index: _index,
+            onHistory: () => setState(() => _index = AppBottomBar.historyIndex),
+            onSettings: () =>
+                setState(() => _index = AppBottomBar.settingsIndex),
+            onAdd: _openAdd,
+          ),
+        ],
       ),
     );
   }

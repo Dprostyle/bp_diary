@@ -1,72 +1,72 @@
+import 'package:bp_diary/core/theme/app_colors.dart';
+import 'package:bp_diary/core/theme/app_dimens.dart';
+import 'package:bp_diary/core/theme/app_typography.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-import 'app_dimens.dart';
-import 'app_typography.dart';
-
 abstract final class AppTheme {
-  static ThemeData light(double scale) {
+  static ThemeData material(double scale) {
     final text = AppTypography.textTheme(scale);
-    final radius = AppDimens.radiusLg * scale;
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       fontFamily: AppTypography.family,
       scaffoldBackgroundColor: AppColors.background,
-      splashFactory: InkRipple.splashFactory,
-      visualDensity: VisualDensity.standard,
-      materialTapTargetSize: MaterialTapTargetSize.padded,
+      textTheme: text,
       colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        onPrimary: AppColors.surface,
-        secondary: AppColors.diastolic,
+        primary: AppColors.accent,
+        onPrimary: AppColors.onAccent,
+        secondary: AppColors.accentSecondary,
         surface: AppColors.surface,
         onSurface: AppColors.textPrimary,
-        error: AppColors.danger,
-        onError: AppColors.surface,
       ),
-      textTheme: text,
-      iconTheme: IconThemeData(
-        color: AppColors.textPrimary,
-        size: AppDimens.iconMd * scale,
-      ),
-      dividerColor: AppColors.divider,
-      dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        titleTextStyle: text.headlineSmall,
-        contentTextStyle: text.bodyLarge,
-      ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
-        },
+    );
+  }
+
+  static CupertinoThemeData cupertino(double scale) {
+    final text = AppTypography.textTheme(scale);
+    return CupertinoThemeData(
+      brightness: Brightness.light,
+      primaryColor: AppColors.accent,
+      primaryContrastingColor: AppColors.onAccent,
+      scaffoldBackgroundColor: AppColors.background,
+      barBackgroundColor: AppColors.background,
+      textTheme: CupertinoTextThemeData(
+        textStyle: text.bodyLarge!,
+        actionTextStyle: text.titleMedium!.copyWith(color: AppColors.accent),
+        actionSmallTextStyle: text.titleSmall!,
+        navTitleTextStyle: text.titleMedium!,
+        navLargeTitleTextStyle: text.headlineLarge!,
+        navActionTextStyle: text.titleMedium!.copyWith(color: AppColors.accent),
+        pickerTextStyle: text.headlineMedium!,
+        dateTimePickerTextStyle: text.titleLarge!,
+        tabLabelTextStyle: text.labelMedium!,
       ),
     );
   }
 }
 
-class AppScrollBehavior extends MaterialScrollBehavior {
-  const AppScrollBehavior();
+abstract final class AppDecorations {
+  static const elevated = BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.all(Radius.circular(AppDimens.radiusLg)),
+    border: Border.fromBorderSide(
+      BorderSide(color: AppColors.border, width: AppDimens.borderWidth),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.shadow,
+        blurRadius: AppDimens.shadowBlur,
+        offset: Offset(0, AppDimens.shadowOffsetY),
+      ),
+    ],
+  );
 
-  @override
-  ScrollPhysics getScrollPhysics(BuildContext context) {
-    return const ClampingScrollPhysics();
-  }
-
-  @override
-  Widget buildOverscrollIndicator(
-    BuildContext context,
-    Widget child,
-    ScrollableDetails details,
-  ) {
-    return child;
-  }
+  static const flat = BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.all(Radius.circular(AppDimens.radiusLg)),
+    border: Border.fromBorderSide(
+      BorderSide(color: AppColors.border, width: AppDimens.borderWidth),
+    ),
+  );
 }

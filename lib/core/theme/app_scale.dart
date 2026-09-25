@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:bp_diary/core/theme/app_dimens.dart';
+import 'package:flutter/widgets.dart';
 
-import 'app_dimens.dart';
-
-extension AppScale on BuildContext {
-  double get uiScale => uiScaleFor(MediaQuery.sizeOf(this).width);
-
-  double px(double token) => token * uiScale;
+abstract final class AppScale {
+  static double of(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return (width / AppDimens.baselineWidth)
+        .clamp(AppDimens.scaleMin, AppDimens.scaleMax)
+        .toDouble();
+  }
 }

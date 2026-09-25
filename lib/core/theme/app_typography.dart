@@ -1,45 +1,120 @@
+import 'package:bp_diary/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-
 abstract final class AppTypography {
-  static const String family = 'Manrope';
-
-  static const double display = 44;
-  static const double headline = 28;
-  static const double title = 20;
-  static const double button = 18;
-  static const double body = 17;
-  static const double callout = 16;
-  static const double caption = 14;
-  static const double micro = 12;
+  static const family = 'Inter';
 
   static TextTheme textTheme(double scale) {
-    TextStyle style(double size, FontWeight weight, double height, Color color) {
+    TextStyle style({
+      required double size,
+      required FontWeight weight,
+      required Color color,
+      double height = 1.3,
+      double letterSpacing = 0,
+      bool tabular = false,
+    }) {
+      final visual = size * scale;
       return TextStyle(
         fontFamily: family,
-        fontSize: size * scale,
+        fontFamilyFallback: const ['sans-serif'],
+        fontSize: visual,
         fontWeight: weight,
-        height: height,
         color: color,
-        letterSpacing: -0.2,
+        height: height,
+        letterSpacing: letterSpacing,
+        fontFeatures: tabular ? const [FontFeature.tabularFigures()] : const [],
+        fontVariations: [
+          FontVariation('wght', weight.value.toDouble()),
+          FontVariation('opsz', visual.clamp(14, 32).toDouble()),
+        ],
       );
     }
 
     return TextTheme(
-      displayLarge: style(display, FontWeight.w800, 1.05, AppColors.textPrimary),
-      displayMedium: style(36, FontWeight.w800, 1.05, AppColors.textPrimary),
-      headlineMedium: style(headline, FontWeight.w800, 1.15, AppColors.textPrimary),
-      headlineSmall: style(title, FontWeight.w800, 1.2, AppColors.textPrimary),
-      titleLarge: style(button, FontWeight.w700, 1.25, AppColors.textPrimary),
-      titleMedium: style(callout, FontWeight.w700, 1.3, AppColors.textPrimary),
-      titleSmall: style(caption, FontWeight.w700, 1.25, AppColors.textSecondary),
-      bodyLarge: style(body, FontWeight.w500, 1.4, AppColors.textSecondary),
-      bodyMedium: style(callout, FontWeight.w500, 1.35, AppColors.textSecondary),
-      bodySmall: style(caption, FontWeight.w600, 1.3, AppColors.textTertiary),
-      labelLarge: style(button, FontWeight.w700, 1.2, AppColors.surface),
-      labelMedium: style(caption, FontWeight.w700, 1.2, AppColors.textPrimary),
-      labelSmall: style(micro, FontWeight.w600, 1.2, AppColors.textTertiary),
+      displayLarge: style(
+        size: 48,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.05,
+        letterSpacing: -0.8,
+        tabular: true,
+      ),
+      displayMedium: style(
+        size: 40,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.05,
+        letterSpacing: -0.6,
+        tabular: true,
+      ),
+      headlineLarge: style(
+        size: 34,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.15,
+        letterSpacing: -0.4,
+      ),
+      headlineMedium: style(
+        size: 28,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.15,
+        letterSpacing: -0.3,
+        tabular: true,
+      ),
+      titleLarge: style(
+        size: 22,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.2,
+        tabular: true,
+      ),
+      titleMedium: style(
+        size: 18,
+        weight: FontWeight.w600,
+        color: AppColors.textPrimary,
+        height: 1.25,
+      ),
+      titleSmall: style(
+        size: 16,
+        weight: FontWeight.w600,
+        color: AppColors.accent,
+        height: 1.2,
+      ),
+      bodyLarge: style(
+        size: 18,
+        weight: FontWeight.w400,
+        color: AppColors.textPrimary,
+        height: 1.35,
+      ),
+      bodyMedium: style(
+        size: 17,
+        weight: FontWeight.w400,
+        color: AppColors.textSecondary,
+        height: 1.35,
+      ),
+      bodySmall: style(
+        size: 15,
+        weight: FontWeight.w400,
+        color: AppColors.textSecondary,
+        height: 1.3,
+      ),
+      labelLarge: style(
+        size: 18,
+        weight: FontWeight.w600,
+        color: AppColors.onAccent,
+        height: 1.2,
+      ),
+      labelMedium: style(
+        size: 16,
+        weight: FontWeight.w500,
+        color: AppColors.inactive,
+        height: 1.2,
+      ),
     );
   }
+}
+
+extension AppText on BuildContext {
+  TextTheme get appText => Theme.of(this).textTheme;
 }

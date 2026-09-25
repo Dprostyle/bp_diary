@@ -1,87 +1,86 @@
 import 'package:bp_diary/app.dart';
-import 'package:bp_diary/core/l10n/app_strings.dart';
-import 'package:bp_diary/core/storage/key_value_store.dart';
+import 'package:bp_diary/data/measurement_controller.dart';
 import 'package:bp_diary/data/measurement_repository.dart';
-import 'package:flutter/material.dart';
+import 'package:bp_diary/features/add/add_measurement_screen.dart';
+import 'package:bp_diary/features/shell/app_bottom_bar.dart';
+import 'package:bp_diary/widgets/measurement_scope.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+Future<void> _pumpApp(WidgetTester tester) async {
+  final controller = MeasurementController(MemoryMeasurementRepository());
+  await controller.load();
+  await tester.pumpWidget(
+    MeasurementScope(controller: controller, child: const BpApp()),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
-  testWidgets('empty screen leads to a saved reading', (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('main screen shows history, add, and settings', (tester) async {
+    await _pumpApp(tester);
 
-    final repo = MeasurementRepository(_MemoryStore());
-    await repo.load();
-    await tester.pumpWidget(BpDiaryApp(repository: repo));
-    await tester.pumpAndSettle();
-
-    expect(find.text(AppStrings.emptyTitle), findsOneWidget);
-    await tester.ensureVisible(find.text(AppStrings.addMeasurement));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(AppStrings.addMeasurement));
-    await tester.pumpAndSettle();
-
-    await _type(tester, '120');
-    await tester.ensureVisible(find.text(AppStrings.lower));
-    await tester.tap(find.text(AppStrings.lower));
-    await tester.pumpAndSettle();
-    await _type(tester, '78');
-    await tester.ensureVisible(find.text(AppStrings.pulse));
-    await tester.tap(find.text(AppStrings.pulse));
-    await tester.pumpAndSettle();
-    await _type(tester, '72');
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(find.byKey(const ValueKey('save-measurement')));
-    await tester.tap(find.byKey(const ValueKey('save-measurement')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('120 / 78'), findsWidgets);
-    expect(find.text(AppStrings.levelNormal), findsWidgets);
-    expect(find.text(AppStrings.history), findsOneWidget);
+    expect(find.text('История'), findsNWidgets(2));
+    expect(find.text('Настройки'), findsOneWidget);
+    expect(find.text('Пока нет измерений'), findsOneWidget);
+    expect(find.byKey(AppBottomBar.addKey), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('small screen and large text scale do not overflow', (tester) async {
+  testWidgets('settings explains local storage', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.byKey(AppBottomBar.settingsKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Настройки'), findsNWidgets(2));
+    expect(
+      find.text('Записи хранятся только на этом устройстве.'),
+      findsOneWidget,
+    );
+    expect(find.text('Пока нет измерений'), findsNothing);
+  });
+
+  testWidgets('saving a reading shows it in history', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.byKey(AppBottomBar.addKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Новое измерение'), findsOneWidget);
+    expect(find.text('Время записи'), findsOneWidget);
+
+    await tester.tap(find.byKey(AddMeasurementScreen.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Пока нет измерений'), findsNothing);
+    expect(find.text('120'), findsOneWidget);
+    expect(find.text('80'), findsOneWidget);
+    expect(find.textContaining('70 уд/мин'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('small phone and large text do not overflow', (tester) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    tester.platformDispatcher.textScaleFactorTestValue = 1.6;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-    final repo = MeasurementRepository(_MemoryStore());
-    await repo.load();
-    await tester.pumpWidget(BpDiaryApp(repository: repo));
+    await _pumpApp(tester);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byKey(AppBottomBar.addKey));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 
-    await tester.ensureVisible(find.text(AppStrings.addMeasurement));
-    await tester.tap(find.text(AppStrings.addMeasurement));
+    await tester.tap(find.byKey(AddMeasurementScreen.saveKey));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    tester.view.physicalSize = const Size(1024, 1366);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
-}
-
-Future<void> _type(WidgetTester tester, String digits) async {
-  for (final digit in digits.split('')) {
-    final key = find.byKey(ValueKey('pad-$digit'));
-    await tester.ensureVisible(key);
-    await tester.tap(key);
-    await tester.pump();
-  }
-}
-
-class _MemoryStore implements KeyValueStore {
-  final _data = <String, String>{};
-
-  @override
-  Future<String?> read(String key) async => _data[key];
-
-  @override
-  Future<void> remove(String key) async => _data.remove(key);
-
-  @override
-  Future<void> write(String key, String value) async => _data[key] = value;
 }

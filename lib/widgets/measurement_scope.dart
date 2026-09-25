@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
+import 'package:bp_diary/data/measurement_controller.dart';
+import 'package:flutter/widgets.dart';
 
-import '../data/measurement_repository.dart';
-
-class MeasurementScope extends InheritedNotifier<MeasurementRepository> {
+class MeasurementScope extends InheritedNotifier<MeasurementController> {
   const MeasurementScope({
-    required MeasurementRepository repository,
+    required MeasurementController controller,
     required super.child,
     super.key,
-  }) : super(notifier: repository);
+  }) : super(notifier: controller);
 
-  static MeasurementRepository of(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<MeasurementScope>();
-    assert(scope != null, 'MeasurementScope is missing');
+  static MeasurementController of(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<MeasurementScope>();
+    assert(scope != null, 'MeasurementScope not found');
     return scope!.notifier!;
   }
 }
